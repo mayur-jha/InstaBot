@@ -13,7 +13,7 @@ HOW TO INSTALL:
 
 3. Click "Load unpacked" button
 
-4. Select this folder containing the extension files
+4. Select the "extension" folder from this project
 
 5. The extension icon should appear in your Chrome toolbar
 

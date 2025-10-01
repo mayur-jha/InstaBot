@@ -12,15 +12,15 @@ This is a **Chrome browser extension** that automates Instagram DM responses usi
 ## Project Structure
 ```
 .
-├── manifest.json          # Chrome extension configuration
-├── popup.html            # Extension popup UI
-├── popup.css             # Modern, animated styling
-├── popup.js              # Popup logic and controls
-├── content.js            # Instagram DOM manipulation
-├── background.js         # Service worker for API calls
-├── icon16.png           # Extension icons
-├── icon48.png
-├── icon128.png
+├── extension/             # Chrome extension files (load this folder)
+│   ├── manifest.json      # Chrome extension configuration
+│   ├── popup.html         # Extension popup UI
+│   ├── popup.css          # Modern, animated styling
+│   ├── popup.js           # Popup logic and controls
+│   ├── content.js         # Instagram DOM manipulation
+│   ├── background.js      # Service worker for API calls
+│   └── icon*.png          # Extension icons (16, 48, 128)
+├── index.html             # Demo/info page
 └── SETUP_INSTRUCTIONS.txt # User installation guide
 ```
 
