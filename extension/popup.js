@@ -78,14 +78,26 @@ elements.startBtn.addEventListener('click', async () => {
 
   chrome.tabs.sendMessage(tab.id, payload, async (response) => {
     if (chrome.runtime.lastError) {
-      console.log('Content script not found, injecting...', chrome.runtime.lastError.message);
+      console.log('Content script not found, injecting...');
       try {
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ['content.js']
         });
-        await new Promise(resolve => setTimeout(resolve, 500));
-        chrome.tabs.sendMessage(tab.id, payload);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        chrome.tabs.sendMessage(tab.id, payload, (retryResponse) => {
+          if (chrome.runtime.lastError) {
+            console.error('Failed after injection:', chrome.runtime.lastError);
+            alert('Failed to start automation. Please refresh the Instagram page and try again.');
+            isRunning = false;
+            elements.startBtn.style.display = 'flex';
+            elements.stopBtn.style.display = 'none';
+            elements.currentChat.style.display = 'none';
+            updateStatus('Error', false);
+          } else {
+            console.log('Automation started successfully!');
+          }
+        });
       } catch (error) {
         console.error('Error injecting content script:', error);
         alert('Failed to start automation. Please refresh the Instagram page and try again.');
@@ -95,6 +107,8 @@ elements.startBtn.addEventListener('click', async () => {
         elements.currentChat.style.display = 'none';
         updateStatus('Error', false);
       }
+    } else {
+      console.log('Automation started successfully!');
     }
   });
 });

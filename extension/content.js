@@ -11,10 +11,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     messageCount = message.messageCount;
     isAutomationRunning = true;
     stats = { processed: 0, responded: 0, skipped: 0 };
+    sendResponse({ started: true });
     startAutomation();
+    return true;
   } else if (message.action === 'stop') {
     isAutomationRunning = false;
+    sendResponse({ stopped: true });
+    return true;
   }
+  return false;
 });
 
 async function startAutomation() {
