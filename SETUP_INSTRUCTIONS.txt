@@ -75,5 +75,16 @@ TROUBLESHOOTING:
 
 - If it doesn't work, make sure you're on Instagram Direct Messages page
 - Refresh the page if Instagram's layout has changed
-- Check Chrome DevTools Console for any errors
+- Check Chrome DevTools Console (F12) for any errors
 - Make sure your API key is valid and has available credits
+- If messages aren't being detected, Instagram may have updated their HTML structure
+- Try increasing the Response Delay if you're being rate limited
+- Make sure you've granted all permissions when loading the extension
+- The extension needs permission to access instagram.com and api.openai.com
+
+KNOWN LIMITATIONS:
+
+- Instagram frequently changes their DOM structure, so selectors may need updates
+- The extension uses heuristics to detect message direction (from you vs from others)
+- Rate limiting by Instagram may occur if you process too many messages too quickly
+- API costs apply - each conversation analyzed uses OpenAI API credits

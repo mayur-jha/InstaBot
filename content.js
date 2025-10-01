@@ -84,9 +84,7 @@ async function processChat(chatElement, index) {
   }
   
   const lastMessage = messages[messages.length - 1];
-  const isFromUser = !lastMessage.classList.contains('x1iyjqo2') && 
-                     !lastMessage.querySelector('[data-testid="outgoing-message"]') &&
-                     !isMessageFromMe(lastMessage);
+  const isFromUser = !isMessageFromMe(lastMessage);
   
   if (!isFromUser) {
     stats.skipped++;
@@ -160,20 +158,28 @@ function getMessages() {
 }
 
 function isMessageFromMe(messageElement) {
-  const outgoingIndicators = [
-    'x1iyjqo2',
-    'outgoing',
-    messageElement.querySelector('[data-testid="outgoing-message"]'),
-    messageElement.querySelector('div[style*="justify-content: flex-end"]'),
-    messageElement.closest('[style*="justify-content: flex-end"]')
-  ];
+  const computedStyle = window.getComputedStyle(messageElement);
+  const justifyContent = computedStyle.justifyContent;
+  const textAlign = computedStyle.textAlign;
   
-  return outgoingIndicators.some(indicator => {
-    if (typeof indicator === 'string') {
-      return messageElement.classList.contains(indicator);
-    }
-    return indicator !== null;
-  });
+  const classList = Array.from(messageElement.classList).join(' ');
+  
+  const hasOutgoingClass = classList.includes('x1iyjqo2') || 
+                          classList.includes('outgoing');
+  
+  const hasOutgoingTestId = messageElement.querySelector('[data-testid*="outgoing"]') !== null;
+  
+  const hasFlexEnd = justifyContent === 'flex-end' || 
+                     messageElement.closest('[style*="justify-content: flex-end"]') !== null ||
+                     messageElement.querySelector('[style*="justify-content: flex-end"]') !== null;
+  
+  const hasRightAlign = textAlign === 'right' ||
+                       messageElement.querySelector('[style*="text-align: right"]') !== null;
+  
+  const parentAlignment = messageElement.parentElement?.style?.justifyContent === 'flex-end' ||
+                         messageElement.parentElement?.style?.textAlign === 'right';
+  
+  return hasOutgoingClass || hasOutgoingTestId || hasFlexEnd || hasRightAlign || parentAlignment;
 }
 
 function extractConversation(messages, count) {
@@ -217,6 +223,7 @@ async function sendMessage(text) {
     'textarea[placeholder*="Message"]',
     'div[contenteditable="true"][role="textbox"]',
     'textarea[aria-label*="Message"]',
+    'div[contenteditable="true"][aria-label*="Message"]',
     'div[contenteditable="true"]'
   ];
   
@@ -234,32 +241,39 @@ async function sendMessage(text) {
   if (input.tagName === 'TEXTAREA') {
     input.value = text;
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
   } else {
     input.textContent = text;
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
   }
   
-  await wait(500);
+  await wait(800);
   
   const sendButtonSelectors = [
-    'button[type="button"]',
-    'div[role="button"]'
+    'button[type="submit"]',
+    'div[role="button"][tabindex="0"]',
+    'button[type="button"]'
   ];
   
   let sendButton = null;
   for (const selector of sendButtonSelectors) {
     const buttons = Array.from(document.querySelectorAll(selector));
     sendButton = buttons.find(btn => {
+      const ariaLabel = btn.getAttribute('aria-label') || '';
       const text = btn.textContent.toLowerCase();
-      return text.includes('send') || btn.querySelector('svg');
+      const hasSvg = btn.querySelector('svg');
+      return ariaLabel.toLowerCase().includes('send') || 
+             text.includes('send') || 
+             (hasSvg && btn.offsetParent !== null);
     });
     if (sendButton) break;
   }
   
-  if (sendButton) {
+  if (sendButton && !sendButton.disabled) {
     sendButton.click();
   } else {
-    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
   }
 }
 

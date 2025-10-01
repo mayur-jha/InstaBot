@@ -5,12 +5,12 @@
   "description": "Automate Instagram DM responses with AI-powered ChatGPT",
   "permissions": [
     "activeTab",
-    "storage",
-    "scripting"
+    "storage"
   ],
   "host_permissions": [
     "https://www.instagram.com/*",
-    "https://instagram.com/*"
+    "https://instagram.com/*",
+    "https://api.openai.com/*"
   ],
   "background": {
     "service_worker": "background.js"
