@@ -2,19 +2,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'generateResponse') {
     generateChatGPTResponse(message.messages, message.apiKey)
       .then(response => {
-        chrome.runtime.sendMessage(response);
         sendResponse(response);
       })
       .catch(error => {
         console.error('Error in background script:', error);
-        sendResponse({ error: error.message });
+        sendResponse({ content: null, success: false, error: error.message });
       });
     return true;
   }
   
   if (message.type === 'stats' || message.type === 'currentChat' || message.type === 'completed') {
-    chrome.runtime.sendMessage(message);
+    sendResponse({ received: true });
+    return true;
   }
+  
+  return false;
 });
 
 async function generateChatGPTResponse(messages, apiKey) {

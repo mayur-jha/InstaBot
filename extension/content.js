@@ -33,7 +33,7 @@ async function startAutomation() {
     }
   }
   
-  chrome.runtime.sendMessage({ type: 'completed' });
+  sendStatusMessage('completed', {});
 }
 
 async function navigateToMessages() {
@@ -69,8 +69,7 @@ async function processChat(chatElement, index) {
   await wait(2000);
   
   const username = getChatUsername();
-  chrome.runtime.sendMessage({
-    type: 'currentChat',
+  sendStatusMessage('currentChat', {
     name: username || `Chat ${index + 1}`,
     status: 'Checking last message...'
   });
@@ -93,8 +92,7 @@ async function processChat(chatElement, index) {
     return;
   }
   
-  chrome.runtime.sendMessage({
-    type: 'currentChat',
+  sendStatusMessage('currentChat', {
     name: username || `Chat ${index + 1}`,
     status: 'Analyzing conversation...'
   });
@@ -104,8 +102,7 @@ async function processChat(chatElement, index) {
   const response = await generateResponse(conversation);
   
   if (response) {
-    chrome.runtime.sendMessage({
-      type: 'currentChat',
+    sendStatusMessage('currentChat', {
       name: username || `Chat ${index + 1}`,
       status: 'Sending response...'
     });
@@ -205,13 +202,26 @@ async function generateResponse(conversation) {
       ...conversation
     ];
     
-    const response = await chrome.runtime.sendMessage({
-      type: 'generateResponse',
-      messages: messages,
-      apiKey: apiKey
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({
+        type: 'generateResponse',
+        messages: messages,
+        apiKey: apiKey
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Runtime error:', chrome.runtime.lastError);
+          resolve(null);
+          return;
+        }
+        
+        if (response && response.success) {
+          resolve(response.content);
+        } else {
+          console.error('API error:', response?.error);
+          resolve(null);
+        }
+      });
     });
-    
-    return response?.content || null;
   } catch (error) {
     console.error('Error generating response:', error);
     return null;
@@ -278,10 +288,33 @@ async function sendMessage(text) {
 }
 
 function updateStats() {
-  chrome.runtime.sendMessage({
-    type: 'stats',
-    stats: stats
-  });
+  try {
+    chrome.runtime.sendMessage({
+      type: 'stats',
+      stats: stats
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.log('Stats message not received:', chrome.runtime.lastError.message);
+      }
+    });
+  } catch (error) {
+    console.log('Error sending stats:', error);
+  }
+}
+
+function sendStatusMessage(type, data) {
+  try {
+    chrome.runtime.sendMessage({
+      type: type,
+      ...data
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.log(`${type} message not received:`, chrome.runtime.lastError.message);
+      }
+    });
+  } catch (error) {
+    console.log(`Error sending ${type}:`, error);
+  }
 }
 
 function wait(ms) {
