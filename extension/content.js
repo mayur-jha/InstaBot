@@ -67,10 +67,10 @@ async function navigateToMessages() {
 
 async function getAllChats() {
   const chatSelectors = [
-    '.x1n2onr6 a[href*="/direct/t/"]',
-    'div[role="listitem"] a[href*="/direct/t/"]',
-    'a[role="link"][href*="/direct/t/"]',
-    'a[href*="/direct/t/"]'
+    '[data-pagelet="IGDThreadList"] div[role="button"][tabindex="0"]',
+    '[aria-label="Chats"][role="list"] div[role="button"]',
+    'div[role="list"] div[role="button"][tabindex="0"]',
+    'div[role="button"][tabindex="0"]'
   ];
   
   let chats = [];
@@ -79,17 +79,21 @@ async function getAllChats() {
     console.log(`Trying selector "${selector}": found ${chats.length} chats`);
     if (chats.length > 0) {
       console.log('Using selector:', selector);
-      console.log('Found chats:', chats.map(c => c.href));
+      console.log('Found chats:', chats.length);
       break;
     }
   }
   
   if (chats.length === 0) {
     console.error('No chats found! Trying broader search...');
-    const allLinks = document.querySelectorAll('a');
-    console.log('Total links on page:', allLinks.length);
-    chats = Array.from(allLinks).filter(a => a.href && a.href.includes('/direct/t/'));
-    console.log('Links with /direct/t/:', chats.length);
+    const allButtons = document.querySelectorAll('div[role="button"]');
+    console.log('Total buttons on page:', allButtons.length);
+    
+    const chatList = document.querySelector('[aria-label="Chats"][role="list"]');
+    if (chatList) {
+      chats = Array.from(chatList.querySelectorAll('div[role="button"][tabindex="0"]'));
+      console.log('Buttons in chat list:', chats.length);
+    }
   }
   
   return chats;
