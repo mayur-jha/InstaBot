@@ -5,7 +5,8 @@
   "description": "Automate Instagram DM responses with AI-powered ChatGPT",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://www.instagram.com/*",

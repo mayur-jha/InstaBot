@@ -69,11 +69,33 @@ elements.startBtn.addEventListener('click', async () => {
   elements.currentChat.style.display = 'block';
   updateStatus('Running', true);
 
-  chrome.tabs.sendMessage(tab.id, { 
+  const payload = { 
     action: 'start',
     apiKey,
     delay: parseInt(elements.delayInput.value),
     messageCount: parseInt(elements.messageCount.value)
+  };
+
+  chrome.tabs.sendMessage(tab.id, payload, async (response) => {
+    if (chrome.runtime.lastError) {
+      console.log('Content script not found, injecting...', chrome.runtime.lastError.message);
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        chrome.tabs.sendMessage(tab.id, payload);
+      } catch (error) {
+        console.error('Error injecting content script:', error);
+        alert('Failed to start automation. Please refresh the Instagram page and try again.');
+        isRunning = false;
+        elements.startBtn.style.display = 'flex';
+        elements.stopBtn.style.display = 'none';
+        elements.currentChat.style.display = 'none';
+        updateStatus('Error', false);
+      }
+    }
   });
 });
 
