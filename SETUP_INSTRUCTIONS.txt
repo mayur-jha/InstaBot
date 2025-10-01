@@ -1,6 +1,10 @@
 Instagram DM AutoResponder - Chrome Extension
 ==============================================
 
+WHAT THIS IS:
+A Chrome browser extension that automates Instagram DM responses using ChatGPT AI.
+This runs entirely in your browser - no server or deployment needed!
+
 HOW TO INSTALL:
 
 1. Open Chrome and go to: chrome://extensions/
@@ -14,38 +18,62 @@ HOW TO INSTALL:
 5. The extension icon should appear in your Chrome toolbar
 
 
+HOW TO GET YOUR OPENAI API KEY:
+
+1. Go to: https://platform.openai.com/api-keys
+
+2. Sign up or log in to OpenAI
+
+3. Click "Create new secret key"
+
+4. Copy the key (starts with "sk-")
+
+5. IMPORTANT: Save it somewhere safe - you won't be able to see it again!
+
+
 HOW TO USE:
 
-1. Get your OpenAI API key from: https://platform.openai.com/api-keys
+1. Click the extension icon in Chrome toolbar
 
-2. Click the extension icon in Chrome toolbar
+2. Paste your OpenAI API key and click "Save"
 
-3. Paste your API key and click "Save"
+3. Open Instagram Direct Messages: https://www.instagram.com/direct/inbox/
 
-4. Open Instagram (https://www.instagram.com/direct/inbox/)
+4. Click "Start Automation" in the extension popup
 
-5. Click "Start Automation" in the extension popup
-
-6. The extension will:
+5. The extension will automatically:
    - Navigate to your Instagram Direct Messages
    - Go through each conversation one by one
-   - Check if the last message is from the other user
-   - Extract the last 20 messages
+   - Check if the last message is from the other user (not you)
+   - Extract the last 20 messages for context
    - Send them to ChatGPT for analysis
    - Generate and send an appropriate response
-   - Continue to the next conversation
+   - Move to the next conversation
 
 
 ADVANCED SETTINGS:
 
 - Response Delay: Time to wait between processing conversations (default: 2000ms)
+  * Increase this to avoid Instagram rate limits
+  
 - Messages to Analyze: How many recent messages to send to ChatGPT (default: 20)
+  * More messages = better context but higher API costs
 
 
 IMPORTANT NOTES:
 
 - Make sure you're logged into Instagram before starting
-- The extension only responds to conversations where the other person sent the last message
-- Your API key is stored locally in your browser and never shared
-- You can stop the automation at any time by clicking the "Stop" button
-- Use responsibly and be aware of Instagram's rate limits
+- The extension ONLY responds when the other person sent the last message
+- Your API key is stored locally in Chrome and NEVER shared
+- You can stop the automation at any time by clicking "Stop"
+- Use responsibly - Instagram may rate limit you if you send too many messages
+- Each response uses your OpenAI API credits
+- The extension works entirely in your browser - no external server needed
+
+
+TROUBLESHOOTING:
+
+- If it doesn't work, make sure you're on Instagram Direct Messages page
+- Refresh the page if Instagram's layout has changed
+- Check Chrome DevTools Console for any errors
+- Make sure your API key is valid and has available credits
