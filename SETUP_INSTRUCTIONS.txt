@@ -1,0 +1,51 @@
+Instagram DM AutoResponder - Chrome Extension
+==============================================
+
+HOW TO INSTALL:
+
+1. Open Chrome and go to: chrome://extensions/
+
+2. Enable "Developer mode" (toggle in top right corner)
+
+3. Click "Load unpacked" button
+
+4. Select this folder containing the extension files
+
+5. The extension icon should appear in your Chrome toolbar
+
+
+HOW TO USE:
+
+1. Get your OpenAI API key from: https://platform.openai.com/api-keys
+
+2. Click the extension icon in Chrome toolbar
+
+3. Paste your API key and click "Save"
+
+4. Open Instagram (https://www.instagram.com/direct/inbox/)
+
+5. Click "Start Automation" in the extension popup
+
+6. The extension will:
+   - Navigate to your Instagram Direct Messages
+   - Go through each conversation one by one
+   - Check if the last message is from the other user
+   - Extract the last 20 messages
+   - Send them to ChatGPT for analysis
+   - Generate and send an appropriate response
+   - Continue to the next conversation
+
+
+ADVANCED SETTINGS:
+
+- Response Delay: Time to wait between processing conversations (default: 2000ms)
+- Messages to Analyze: How many recent messages to send to ChatGPT (default: 20)
+
+
+IMPORTANT NOTES:
+
+- Make sure you're logged into Instagram before starting
+- The extension only responds to conversations where the other person sent the last message
+- Your API key is stored locally in your browser and never shared
+- You can stop the automation at any time by clicking the "Stop" button
+- Use responsibly and be aware of Instagram's rate limits

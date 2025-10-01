@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram DM AutoResponder</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1>DM AutoResponder</h1>
+      </div>
+      <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Ready</span>
+      </div>
+    </div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <label for="apiKey">OpenAI API Key</label>
+      <div class="input-group">
+        <input type="password" id="apiKey" placeholder="sk-...">
+        <button id="saveApiKey" class="btn-secondary">Save</button>
+      </div>
+      <p class="hint">Your API key is stored locally and never shared</p>
+    </div>
+
+    <div class="stats-grid" id="statsGrid" style="display: none;">
+      <div class="stat-card">
+        <span class="stat-value" id="processedCount">0</span>
+        <span class="stat-label">Processed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="respondedCount">0</span>
+        <span class="stat-label">Responded</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="skippedCount">0</span>
+        <span class="stat-label">Skipped</span>
+      </div>
+    </div>
+
+    <div class="current-chat" id="currentChat" style="display: none;">
+      <div class="current-chat-header">Currently Processing</div>
+      <div class="current-chat-info">
+        <div class="chat-avatar" id="chatAvatar"></div>
+        <div class="chat-details">
+          <div class="chat-name" id="chatName">-</div>
+          <div class="chat-status" id="chatStatus">Analyzing conversation...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="startBtn" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 3L19 12L5 21V3Z" fill="currentColor"/>
+        </svg>
+        Start Automation
+      </button>
+      <button id="stopBtn" class="btn-danger" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="12" height="12" fill="currentColor"/>
+        </svg>
+        Stop
+      </button>
+    </div>
+
+    <div class="settings-section">
+      <details>
+        <summary>Advanced Settings</summary>
+        <div class="settings-content">
+          <label>
+            <span>Response Delay (ms)</span>
+            <input type="number" id="delayInput" value="2000" min="1000" max="10000">
+          </label>
+          <label>
+            <span>Messages to Analyze</span>
+            <input type="number" id="messageCount" value="20" min="5" max="50">
+          </label>
+        </div>
+      </details>
+    </div>
+
+    <div class="footer">
+      <p>Powered by ChatGPT • Use responsibly</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
