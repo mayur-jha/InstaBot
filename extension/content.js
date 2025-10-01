@@ -23,13 +23,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function startAutomation() {
+  console.log('Starting automation...');
   await navigateToMessages();
+  console.log('Navigated to messages, waiting 2 seconds...');
   await wait(2000);
   
+  console.log('Getting chat list...');
   const chatList = await getAllChats();
+  console.log(`Found ${chatList.length} chats to process`);
+  
+  if (chatList.length === 0) {
+    console.error('No chats found! Make sure you are on the Instagram Direct Messages page.');
+    alert('No conversations found. Make sure you are on Instagram Direct Messages page.');
+    sendStatusMessage('completed', {});
+    return;
+  }
   
   for (let i = 0; i < chatList.length && isAutomationRunning; i++) {
     try {
+      console.log(`Processing chat ${i + 1} of ${chatList.length}`);
       const chat = chatList[i];
       await processChat(chat, i);
       await wait(delay);
@@ -38,6 +50,7 @@ async function startAutomation() {
     }
   }
   
+  console.log('Automation completed!');
   sendStatusMessage('completed', {});
 }
 
@@ -54,16 +67,29 @@ async function navigateToMessages() {
 
 async function getAllChats() {
   const chatSelectors = [
-    'div[role="listitem"]',
-    'div[role="button"]',
-    'a[role="link"][href*="/direct/t/"]'
+    '.x1n2onr6 a[href*="/direct/t/"]',
+    'div[role="listitem"] a[href*="/direct/t/"]',
+    'a[role="link"][href*="/direct/t/"]',
+    'a[href*="/direct/t/"]'
   ];
   
   let chats = [];
   for (const selector of chatSelectors) {
-    chats = Array.from(document.querySelectorAll(selector))
-      .filter(el => el.href && el.href.includes('/direct/t/'));
-    if (chats.length > 0) break;
+    chats = Array.from(document.querySelectorAll(selector));
+    console.log(`Trying selector "${selector}": found ${chats.length} chats`);
+    if (chats.length > 0) {
+      console.log('Using selector:', selector);
+      console.log('Found chats:', chats.map(c => c.href));
+      break;
+    }
+  }
+  
+  if (chats.length === 0) {
+    console.error('No chats found! Trying broader search...');
+    const allLinks = document.querySelectorAll('a');
+    console.log('Total links on page:', allLinks.length);
+    chats = Array.from(allLinks).filter(a => a.href && a.href.includes('/direct/t/'));
+    console.log('Links with /direct/t/:', chats.length);
   }
   
   return chats;
