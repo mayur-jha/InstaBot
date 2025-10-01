@@ -264,62 +264,91 @@ async function generateResponse(conversation) {
 }
 
 async function sendMessage(text) {
+  console.log('Attempting to send message:', text.substring(0, 50) + '...');
+  
   const inputSelectors = [
-    'textarea[placeholder*="Message"]',
     'div[contenteditable="true"][role="textbox"]',
-    'textarea[aria-label*="Message"]',
+    'textarea[placeholder*="Message"]',
     'div[contenteditable="true"][aria-label*="Message"]',
-    'div[contenteditable="true"]'
+    'textarea[aria-label*="Message"]',
+    'div[contenteditable="true"]',
+    'p[contenteditable="true"]'
   ];
   
   let input = null;
   for (const selector of inputSelectors) {
     input = document.querySelector(selector);
-    if (input) break;
+    if (input) {
+      console.log('Found message input with selector:', selector);
+      break;
+    }
   }
   
   if (!input) {
-    console.error('Could not find message input');
+    console.error('Could not find message input!');
+    console.log('Available inputs:', document.querySelectorAll('input, textarea, [contenteditable]').length);
     return;
   }
   
-  if (input.tagName === 'TEXTAREA') {
+  // Focus the input first
+  input.focus();
+  
+  // Set the text
+  if (input.tagName === 'TEXTAREA' || input.tagName === 'INPUT') {
     input.value = text;
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
   } else {
+    // For contenteditable divs
     input.textContent = text;
+    input.innerHTML = text; // Try both
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
   }
   
-  await wait(800);
+  console.log('Text entered, waiting before sending...');
+  await wait(1000);
   
+  // Find send button
   const sendButtonSelectors = [
+    'div[role="button"][aria-label*="Send" i]',
+    'button[aria-label*="Send" i]',
+    'div[role="button"]:has(svg)',
     'button[type="submit"]',
-    'div[role="button"][tabindex="0"]',
-    'button[type="button"]'
+    'div[role="button"][tabindex="0"]'
   ];
   
   let sendButton = null;
   for (const selector of sendButtonSelectors) {
     const buttons = Array.from(document.querySelectorAll(selector));
+    console.log(`Trying send button selector "${selector}": found ${buttons.length} buttons`);
+    
     sendButton = buttons.find(btn => {
-      const ariaLabel = btn.getAttribute('aria-label') || '';
+      const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
       const text = btn.textContent.toLowerCase();
-      const hasSvg = btn.querySelector('svg');
-      return ariaLabel.toLowerCase().includes('send') || 
+      const hasSendSvg = btn.querySelector('svg');
+      
+      return ariaLabel.includes('send') || 
              text.includes('send') || 
-             (hasSvg && btn.offsetParent !== null);
+             (hasSendSvg && btn.offsetParent !== null && ariaLabel !== 'choose an emoji');
     });
-    if (sendButton) break;
+    
+    if (sendButton) {
+      console.log('Found send button with selector:', selector);
+      break;
+    }
   }
   
   if (sendButton && !sendButton.disabled) {
+    console.log('Clicking send button...');
     sendButton.click();
   } else {
+    console.log('Send button not found or disabled, trying Enter key...');
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
   }
+  
+  await wait(500);
+  console.log('Message sent successfully');
 }
 
 function updateStats() {
