@@ -1,38 +1,42 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'generateResponse') {
+  if (message.type === "generateResponse") {
     generateChatGPTResponse(message.messages, message.apiKey)
-      .then(response => {
+      .then((response) => {
         sendResponse(response);
       })
-      .catch(error => {
-        console.error('Error in background script:', error);
+      .catch((error) => {
+        console.error("Error in background script:", error);
         sendResponse({ content: null, success: false, error: error.message });
       });
     return true;
   }
-  
-  if (message.type === 'stats' || message.type === 'currentChat' || message.type === 'completed') {
+
+  if (
+    message.type === "stats" ||
+    message.type === "currentChat" ||
+    message.type === "completed"
+  ) {
     sendResponse({ received: true });
     return true;
   }
-  
+
   return false;
 });
 
 async function generateChatGPTResponse(messages, apiKey) {
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: "gpt-4o-mini",
         messages: messages,
         temperature: 0.7,
-        max_tokens: 150
-      })
+        max_tokens: 150,
+      }),
     });
 
     if (!response.ok) {
@@ -44,14 +48,14 @@ async function generateChatGPTResponse(messages, apiKey) {
     const data = await response.json();
     return {
       content: data.choices[0].message.content,
-      success: true
+      success: true,
     };
   } catch (error) {
-    console.error('ChatGPT API Error:', error);
+    console.error("ChatGPT API Error:", error);
     return {
       content: null,
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 }
