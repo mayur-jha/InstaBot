@@ -266,13 +266,15 @@ async function generateResponse(conversation) {
 async function sendMessage(text) {
   console.log('Attempting to send message:', text.substring(0, 50) + '...');
   
+  // Instagram uses Lexical editor (data-lexical-editor="true")
   const inputSelectors = [
+    'div[aria-label="Message"][role="textbox"][contenteditable="true"][data-lexical-editor="true"]',
+    'div[aria-label="Message"][role="textbox"][contenteditable="true"]',
+    'div[contenteditable="true"][role="textbox"][data-lexical-editor="true"]',
     'div[contenteditable="true"][role="textbox"]',
     'textarea[placeholder*="Message"]',
     'div[contenteditable="true"][aria-label*="Message"]',
-    'textarea[aria-label*="Message"]',
-    'div[contenteditable="true"]',
-    'p[contenteditable="true"]'
+    'textarea[aria-label*="Message"]'
   ];
   
   let input = null;
@@ -286,65 +288,91 @@ async function sendMessage(text) {
   
   if (!input) {
     console.error('Could not find message input!');
-    console.log('Available inputs:', document.querySelectorAll('input, textarea, [contenteditable]').length);
+    const allContentEditable = document.querySelectorAll('[contenteditable="true"]');
+    console.log('Available contenteditable elements:', allContentEditable.length);
     return;
   }
   
   // Focus the input first
   input.focus();
+  await wait(200);
   
-  // Set the text
-  if (input.tagName === 'TEXTAREA' || input.tagName === 'INPUT') {
+  // For Lexical editor, we need to update the <p> tag inside
+  if (input.hasAttribute('data-lexical-editor')) {
+    console.log('Detected Lexical editor, using special handling...');
+    const pTag = input.querySelector('p');
+    if (pTag) {
+      pTag.textContent = text;
+      pTag.innerHTML = text;
+    } else {
+      input.innerHTML = `<p class="xat24cr xdj266r" dir="auto">${text}</p>`;
+    }
+  } else if (input.tagName === 'TEXTAREA' || input.tagName === 'INPUT') {
     input.value = text;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
   } else {
-    // For contenteditable divs
+    // Standard contenteditable
     input.textContent = text;
-    input.innerHTML = text; // Try both
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.innerHTML = text;
   }
+  
+  // Trigger input events
+  input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+  input.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, data: text }));
   
   console.log('Text entered, waiting before sending...');
   await wait(1000);
   
-  // Find send button
-  const sendButtonSelectors = [
-    'div[role="button"][aria-label*="Send" i]',
-    'button[aria-label*="Send" i]',
-    'div[role="button"]:has(svg)',
-    'button[type="submit"]',
-    'div[role="button"][tabindex="0"]'
-  ];
-  
+  // Find send button - it should be a sibling or nearby element
+  const messageContainer = input.closest('.x6s0dn4, .x78zum5, form, [role="form"]');
   let sendButton = null;
-  for (const selector of sendButtonSelectors) {
-    const buttons = Array.from(document.querySelectorAll(selector));
-    console.log(`Trying send button selector "${selector}": found ${buttons.length} buttons`);
+  
+  if (messageContainer) {
+    console.log('Searching for send button in message container...');
+    const buttons = messageContainer.querySelectorAll('div[role="button"], button');
+    console.log(`Found ${buttons.length} buttons in container`);
     
-    sendButton = buttons.find(btn => {
+    sendButton = Array.from(buttons).find(btn => {
       const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
-      const text = btn.textContent.toLowerCase();
-      const hasSendSvg = btn.querySelector('svg');
+      const svg = btn.querySelector('svg');
+      const isEmoji = ariaLabel.includes('emoji');
+      const isSend = ariaLabel.includes('send');
       
-      return ariaLabel.includes('send') || 
-             text.includes('send') || 
-             (hasSendSvg && btn.offsetParent !== null && ariaLabel !== 'choose an emoji');
+      // Send button usually has an SVG but is NOT the emoji button
+      return isSend || (svg && !isEmoji && btn.offsetParent !== null);
     });
+  }
+  
+  // Fallback: search globally
+  if (!sendButton) {
+    console.log('Searching for send button globally...');
+    const sendButtonSelectors = [
+      'div[role="button"][aria-label*="Send" i]',
+      'button[aria-label*="Send" i]'
+    ];
     
-    if (sendButton) {
-      console.log('Found send button with selector:', selector);
-      break;
+    for (const selector of sendButtonSelectors) {
+      sendButton = document.querySelector(selector);
+      if (sendButton) {
+        console.log('Found send button with selector:', selector);
+        break;
+      }
     }
   }
   
   if (sendButton && !sendButton.disabled) {
-    console.log('Clicking send button...');
+    console.log('Clicking send button...', sendButton.getAttribute('aria-label'));
     sendButton.click();
   } else {
     console.log('Send button not found or disabled, trying Enter key...');
-    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { 
+      key: 'Enter', 
+      code: 'Enter',
+      keyCode: 13, 
+      which: 13,
+      bubbles: true,
+      cancelable: true
+    }));
   }
   
   await wait(500);
